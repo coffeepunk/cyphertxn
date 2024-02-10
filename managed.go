@@ -35,3 +35,35 @@ func ManagedTx(ds *DatabaseService, work neo4j.ManagedTransactionWork, session n
 
 	return result, nil
 }
+
+func Transactions(ds *DatabaseService, statements ...Statement) (any, error) {
+	session := ds.Driver.NewSession(ds.Ctx, neo4j.SessionConfig{
+		DatabaseName: ds.Name,
+	})
+	defer session.Close(ds.Ctx)
+
+	result, err := session.ExecuteWrite(ds.Ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		var results []*neo4j.Record
+		for _, s := range statements {
+			result, runErr := tx.Run(ds.Ctx, s.Query, s.Params)
+			if runErr != nil {
+				return nil, runErr
+			}
+
+			records, errRes := result.Collect(ds.Ctx)
+			if errRes != nil {
+				return []*neo4j.Record{}, errRes
+			}
+
+			results = append(results, records...)
+		}
+
+		return results, nil
+	})
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
