@@ -86,17 +86,3 @@ func WorkUnit(ds *DatabaseService, s Statement, tx neo4j.ManagedTransaction) ([]
 	}
 	return records, nil
 }
-
-func WorkUnit(ds *DatabaseService, s Statement, tx neo4j.ManagedTransaction) ([]*neo4j.Record, error) {
-	result, runErr := tx.Run(ds.Ctx, s.Query, s.Params)
-	if runErr != nil {
-		log.Fatalln(runErr)
-		return nil, runErr
-	}
-
-	records, err := result.Collect(ds.Ctx)
-	if err != nil {
-		return []*neo4j.Record{}, err
-	}
-	return records, nil
-}
