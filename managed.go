@@ -53,7 +53,7 @@ func Transactions(ds *DatabaseService, statements ...Statement) (any, error) {
 	})
 	defer session.Close(ds.Ctx)
 
-	result, err := session.ExecuteWrite(ds.Ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+	return session.ExecuteWrite(ds.Ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		var results []*neo4j.Record
 		for _, s := range statements {
 			result, runErr := tx.Run(ds.Ctx, s.Query, s.Params)
@@ -71,12 +71,6 @@ func Transactions(ds *DatabaseService, statements ...Statement) (any, error) {
 
 		return results, nil
 	})
-
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
 }
 
 func WorkUnit(ds *DatabaseService, s Statement, tx neo4j.ManagedTransaction) ([]*neo4j.Record, error) {
